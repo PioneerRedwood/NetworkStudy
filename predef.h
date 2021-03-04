@@ -9,8 +9,10 @@
 
 #include <WinSock2.h>
 #include <Windows.h>
+#include <WS2tcpip.h>
 
 #include "MemDB.h"
+#include "Utils.h"
 
 #define PORT 8888
 #define SOCKET_BUFFER 4096

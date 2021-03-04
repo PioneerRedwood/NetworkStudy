@@ -30,6 +30,7 @@ public:
 	bool SendPacket(char* packet, int size);
 	bool RecvPacket(SocketBuffer* buffer);
 
+	int SendImmediate(char* buffer, int dataSize);
 private:
 	void SendDone();
 	void RecvDone();
@@ -43,13 +44,9 @@ private:
 	bool UpdateServer();
 	bool UpdateClient();
 
-#if WIN32
+
 	SOCKET sock;
 	SOCKET clientSock;
-#else
-	int sock;
-	int clientSock;
-#endif
 
 	struct sockaddr_in serverAddr;
 	struct sockaddr_in clientAddr;

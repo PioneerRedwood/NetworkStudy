@@ -1,6 +1,8 @@
 #include "predef.h"
 #include "SimpleSocket.h"
 
+
+
 Socket::Socket()
 {
 	sock = -1;
@@ -27,7 +29,7 @@ bool	Socket::Init()
 #ifdef SERVER
 	return InitServer();
 #else
-// Client
+	// Client
 	return InitClient();
 #endif
 	return true;
@@ -43,7 +45,7 @@ void	Socket::UnInit()
 bool	Socket::Connect()
 {
 	// connect to server
-	if(::connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
+	if (::connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
 	{
 		// logging here // connect failed error
 		return false;
@@ -52,7 +54,7 @@ bool	Socket::Connect()
 	// Function In Out Non-Blocking In Out
 #ifdef USE_NONEBLOCK
 	unsigned long arg = 1;
-	if(ioctlsocket(sock, FIONBIO, &arg) != 0) return false;
+	if (ioctlsocket(sock, FIONBIO, &arg) != 0) return false;
 #endif
 }
 
@@ -60,7 +62,7 @@ void	Socket::CloseSocket()
 {
 #ifdef SERVER
 	CloseServer();
-	#else
+#else
 	CloseClient();
 #endif // SERVER
 
@@ -111,9 +113,14 @@ bool	Socket::InitClient()
 	// Logging here // server address
 
 	memset((void*)&serverAddr, 0x00, sizeof(serverAddr));
-	
-	serverAddr.sin_addr.S_un.S_addr = inet_addr(serverAddress.c_str());
+
+	// inet_addr is deprecated vs 2014
+	//serverAddr.sin_addr.S_un.S_addr = inet_addr(serverAddress.c_str());
 	serverAddr.sin_family = AF_INET;
+
+	// Utils
+	// https://stackoverflow.com/questions/27220/how-to-convert-stdstring-to-lpcwstr-in-c-unicode
+	::InetPtonW(AF_INET, Utils::GetInstance()->StringToPCWSTR(serverAddress).c_str(), &serverAddr.sin_addr.S_un.S_addr);
 	serverAddr.sin_port = htons(PORT);
 
 	// TCP_NODELAY -> Nagle 알고리즘 사용 유무: 0(false) 혹은 1(true)
@@ -145,7 +152,7 @@ void	Socket::CloseServer()
 
 void	Socket::CloseClient()
 {
-	if(sock == -1) return;
+	if (sock == -1) return;
 	::closesocket(sock);
 	sock = -1;
 }
@@ -167,9 +174,9 @@ bool	Socket::UpdateServer()
 	{
 		ZeroMemory(&clientAddr, sizeof(struct sockaddr_in));
 		int sockLen = sizeof(struct sockaddr_in);
-		
+
 		// 접속 허가
-		if(clientSock = accept(sock, (struct sockaddr*)&clientAddr, &sockLen) == INVALID_SOCKET)
+		if (clientSock = accept(sock, (struct sockaddr*)&clientAddr, &sockLen) == INVALID_SOCKET)
 		{
 			// Logging here // accept error
 			::closesocket(sock);
@@ -178,7 +185,7 @@ bool	Socket::UpdateServer()
 
 		// client socket -> Non-Block
 		unsigned long arg = 1;
-		if(ioctlsocket(clientSock, FIONBIO, &arg) != 0) return false;
+		if (ioctlsocket(clientSock, FIONBIO, &arg) != 0) return false;
 		// Logging here // new client comes
 	}
 	else
@@ -194,7 +201,7 @@ bool	Socket::UpdateServer()
 		FD_SET(clientSock, &read_fds);
 
 		// 읽을 게 없으면 
-		if(select(clientSock + 1, &read_fds, &write_fds, (fd_set*)0, &waitTime) < 0) return true;
+		if (select(clientSock + 1, &read_fds, &write_fds, (fd_set*)0, &waitTime) < 0) return true;
 
 		// 읽을 게 있으면 recv
 		if (FD_ISSET(clientSock, &read_fds))
@@ -204,7 +211,7 @@ bool	Socket::UpdateServer()
 			memset(&in, 0, sizeof(in));
 
 			int recvSize = recv(clientSock, in, sizeof(in), 0);
-			if(recvSize > 0)
+			if (recvSize > 0)
 			{
 				if (recvBuffer.totalSize > 0)
 				{
@@ -260,7 +267,6 @@ bool	Socket::UpdateServer()
 bool	Socket::UpdateClient()
 {
 #if 1
-	int sel;
 	char in[SOCKET_BUFFER];
 	memset(&in, 0, sizeof(in));
 
@@ -355,22 +361,89 @@ bool	Socket::UpdateClient()
 	return true;
 }
 
-bool	Socket::SendPacket(char* packet, int size)
+bool	Socket::SendPacket(char* packet, int packetSize)
 {
-
+	if (sendBuffer.totalSize > 0)
+	{
+		// 전송 중이라 쌓아 놓는다
+		SocketBuffer buf;
+		buf.totalSize = packetSize;
+		memcpy(buf.buffer, packet, packetSize);
+		sendBufferList.push_back(buf);
+	}
+	else
+	{
+		// 바로 전송할거로 이동
+		sendBuffer.totalSize = packetSize;
+		sendBuffer.currentSize = 0;
+		memcpy(sendBuffer.buffer, packet, packetSize);
+	}
+	return true;
 }
 
 bool	Socket::RecvPacket(SocketBuffer* buffer)
 {
+	if (!recvBufferList.empty())
+	{
+		buffer->totalSize = recvBufferList[0].totalSize;
+		buffer->currentSize = recvBufferList[0].currentSize;
+		memcpy(buffer->buffer, recvBufferList[0].buffer, SOCKET_BUFFER);
+		recvBufferList.pop_front();
+		return true;
+	}
+}
 
+int Socket::SendImmediate(char* buffer, int dataSize)
+{
+	return send(sock, buffer, dataSize, 0);
 }
 
 void	Socket::SendDone()
 {
-
+	// 전송 버퍼 리스트가 비어있지 않으면
+	if (!sendBufferList.empty())
+	{
+		// 전송 버퍼에 리스트 첫번째 인자 복사
+		sendBuffer.totalSize = sendBufferList[0].totalSize;
+		sendBuffer.currentSize = 0;
+		memcpy(sendBuffer.buffer, sendBufferList[0].buffer, sendBufferList[0].totalSize);
+		sendBufferList.pop_front();
+	}
+	else
+	{
+		// 비어있으면 전송 버퍼를 초기화
+		sendBuffer.totalSize = -1;
+		sendBuffer.currentSize = 0;
+		memset(sendBuffer.buffer, 0, SOCKET_BUFFER);
+	}
 }
 
 void	Socket::RecvDone()
 {
+	while (1)
+	{
+		if (recvBuffer.totalSize >= sizeof(int) + sizeof(char))
+		{
+			int dataSize = (int&)*recvBuffer.buffer;
+			if (recvBuffer.totalSize >= sizeof(int) + sizeof(char) + dataSize)
+			{
+				SocketBuffer buffer;
+				buffer.totalSize = sizeof(int) + sizeof(char) + dataSize;
+				memcpy(buffer.buffer, recvBuffer.buffer, buffer.totalSize);
 
+				recvBuffer.totalSize -= buffer.totalSize;
+
+				if (recvBuffer.totalSize > 0)
+				{
+					char tempBuffer[SOCKET_BUFFER] = { 0, };
+					memcpy(tempBuffer, recvBuffer.buffer + buffer.totalSize, recvBuffer.totalSize);
+					memcpy(recvBuffer.buffer, tempBuffer, SOCKET_BUFFER);
+				}
+			}
+			else
+				break;
+		}
+		else
+			break;
+	}
 }
