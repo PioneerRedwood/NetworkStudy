@@ -1,8 +1,6 @@
 #include "predef.h"
 #include "SimpleSocket.h"
 
-
-
 Socket::Socket()
 {
 	sock = -1;
@@ -35,39 +33,6 @@ bool	Socket::Init()
 	return true;
 }
 
-void	Socket::UnInit()
-{
-	CloseSocket();
-	recvBufferList.clear();
-	sendBufferList.clear();
-}
-
-bool	Socket::Connect()
-{
-	// connect to server
-	if (::connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
-	{
-		// logging here // connect failed error
-		return false;
-	}
-	// FIONBIO 추정
-	// Function In Out Non-Blocking In Out
-#ifdef USE_NONEBLOCK
-	unsigned long arg = 1;
-	if (ioctlsocket(sock, FIONBIO, &arg) != 0) return false;
-#endif
-}
-
-void	Socket::CloseSocket()
-{
-#ifdef SERVER
-	CloseServer();
-#else
-	CloseClient();
-#endif // SERVER
-
-}
-
 bool	Socket::InitServer()
 {
 #ifdef SERVER
@@ -92,8 +57,48 @@ bool	Socket::InitServer()
 	// Logging here // socket created
 #endif // SERVER
 	return true;
-
 }
+
+void	Socket::UnInit()
+{
+	CloseSocket();
+	recvBufferList.clear();
+	sendBufferList.clear();
+}
+
+bool	Socket::Connect()
+{
+	// connect to server
+	if (connect(sock, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
+	{
+		// logging here // connect failed error
+		return false;
+	}
+	// FIONBIO 추정
+	// Function In Out Non-Blocking In Out
+//#ifdef USE_NONEBLOCK
+//	unsigned long arg = 1;
+//	if (ioctlsocket(sock, FIONBIO, &arg) != 0) return false;
+//#endif
+	unsigned long arg = 1;
+	if (ioctlsocket(sock, FIONBIO, &arg) != 0)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void	Socket::CloseSocket()
+{
+#ifdef SERVER
+	CloseServer();
+#else
+	CloseClient();
+#endif // SERVER
+}
+
+
 
 bool	Socket::InitClient()
 {
@@ -120,7 +125,7 @@ bool	Socket::InitClient()
 
 	// Utils
 	// https://stackoverflow.com/questions/27220/how-to-convert-stdstring-to-lpcwstr-in-c-unicode
-	::InetPtonW(AF_INET, Utils::GetInstance()->StringToPCWSTR(serverAddress).c_str(), &serverAddr.sin_addr.S_un.S_addr);
+	::InetPtonW(AF_INET, Utils::StringToPCWSTR(serverAddress).c_str(), &serverAddr.sin_addr.S_un.S_addr);
 	serverAddr.sin_port = htons(PORT);
 
 	// TCP_NODELAY -> Nagle 알고리즘 사용 유무: 0(false) 혹은 1(true)
@@ -257,12 +262,12 @@ bool	Socket::UpdateServer()
 			{
 				sendBuffer.currentSize += sendSize;
 			}
-		}
-	}
+}
+}
 #endif // SERVER
 	return true;
 
-}
+	}
 
 bool	Socket::UpdateClient()
 {
@@ -356,10 +361,10 @@ bool	Socket::UpdateClient()
 		{
 			sendBuffer.currentSize += sendSize;
 		}
-	}
+		}
 #endif // 1
 	return true;
-}
+	}
 
 bool	Socket::SendPacket(char* packet, int packetSize)
 {
@@ -383,14 +388,18 @@ bool	Socket::SendPacket(char* packet, int packetSize)
 
 bool	Socket::RecvPacket(SocketBuffer* buffer)
 {
+	// 수신 버퍼 리스트가 비어있지 않으면
 	if (!recvBufferList.empty())
 	{
+		// 수신 버퍼 리스트 첫번째 인자를 매개변수로 전달된 버퍼에 설정
 		buffer->totalSize = recvBufferList[0].totalSize;
 		buffer->currentSize = recvBufferList[0].currentSize;
 		memcpy(buffer->buffer, recvBufferList[0].buffer, SOCKET_BUFFER);
+		// 수신 버퍼 리스트에서 넣은애 빼기
 		recvBufferList.pop_front();
 		return true;
 	}
+	return false;
 }
 
 int Socket::SendImmediate(char* buffer, int dataSize)
@@ -422,22 +431,28 @@ void	Socket::RecvDone()
 {
 	while (1)
 	{
+		// int + char 크기 이상 수신 버퍼에 뭔가가 있다면
 		if (recvBuffer.totalSize >= sizeof(int) + sizeof(char))
 		{
+			// 
 			int dataSize = (int&)*recvBuffer.buffer;
 			if (recvBuffer.totalSize >= sizeof(int) + sizeof(char) + dataSize)
 			{
 				SocketBuffer buffer;
 				buffer.totalSize = sizeof(int) + sizeof(char) + dataSize;
 				memcpy(buffer.buffer, recvBuffer.buffer, buffer.totalSize);
+				recvBufferList.push_back(buffer);
 
 				recvBuffer.totalSize -= buffer.totalSize;
 
+				// 아직 남아있는가?
 				if (recvBuffer.totalSize > 0)
 				{
 					char tempBuffer[SOCKET_BUFFER] = { 0, };
 					memcpy(tempBuffer, recvBuffer.buffer + buffer.totalSize, recvBuffer.totalSize);
-					memcpy(recvBuffer.buffer, tempBuffer, SOCKET_BUFFER);
+					
+					// 문제가 있어보임 동작하는 방식을 제대로 이해해야 할듯
+					//memcpy(recvBuffer.buffer, tempBuffer, SOCKET_BUFFER);
 				}
 			}
 			else

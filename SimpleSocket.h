@@ -2,8 +2,8 @@
 
 struct SocketBuffer
 {
-	int totalSize;
-	int currentSize;
+	int totalSize;						// 전체 길이
+	int currentSize;					// 진행중인 버퍼 위치 (송/수신 모두 포함)
 	char buffer[SOCKET_BUFFER];
 
 	SocketBuffer()

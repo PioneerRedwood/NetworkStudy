@@ -51,12 +51,6 @@ float		MemDB::GetFloatValue(std::string key, float d)
 	return (float)atof(ret.c_str());
 }
 
-// public? private? 같은 이름이지만 접근 제한자만 다름
-//std::string	MemDB::GetValue(std::string key)
-//{
-//	return GetValue(key);
-//}
-
 void		MemDB::SetValue(std::string key, int value)
 {
 	char valueStr[256];
@@ -80,12 +74,6 @@ void		MemDB::SetValue(std::string key, float value)
 
 	SetValue(key, valueStr);
 }
-
-// public? private? 같은 이름이지만 접근 제한자만 다름
-//void		MemDB::SetValue(std::string key, std::string value)
-//{
-//	SetValue(key, value);
-//}
 
 std::string	MemDB::GetValue(std::string key)
 {
