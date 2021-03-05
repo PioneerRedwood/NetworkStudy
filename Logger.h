@@ -6,11 +6,11 @@
 class Logger
 {
 public:
-	static void log(int errNo, const char* format, ...);
+	static void Log(int errNo, const char* format, ...);
 
 private:
-	Logger();
-	~Logger();
+	Logger()	{};
+	~Logger()	{};
 };
 
 #endif

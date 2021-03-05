@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _MEMDB_
+#define _MEMDB_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,3 +36,5 @@ private:
 
 	std::map<std::string, std::string> keyValue;
 };
+
+#endif

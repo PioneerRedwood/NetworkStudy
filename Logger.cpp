@@ -5,17 +5,8 @@
 #include "Logger.h"
 #include "Utils.h"
 
-Logger::Logger()
-{
 
-}
-
-Logger::~Logger()
-{
-
-}
-
-void Logger::log(int errNo, const char* format, ...)
+void Logger::Log(int errNo, const char* format, ...)
 {
 	bool isConsoleLogEnable = true;
 	bool isFileLogEnable = MemDB::GetInstance()->GetBoolValue("filelog");
@@ -29,13 +20,18 @@ void Logger::log(int errNo, const char* format, ...)
 	std::string dateTime = Utils::GetCurrentDateTime();
 	std::string logContent;
 
-	if (errNo > -1)
+	// errNo: -1(LOG_ERROR) / 0(LOG_INFO) / ...
+	switch (errNo)
 	{
+	case -1:
 		logContent = Utils::GetStringFormat("Error[%d] ", errNo) + dateTime + buffer + '\n';
-	}
-	else
-	{
+		break;
+	case 0:
+		logContent = Utils::GetStringFormat("LOG_INFO") + dateTime + buffer + '\n';
+		break;
+	default:
 		logContent = dateTime + buffer + '\n';
+		break;
 	}
 
 	if (isFileLogEnable)
@@ -47,17 +43,17 @@ void Logger::log(int errNo, const char* format, ...)
 		if (err != 0)
 		{
 			// log? or console write?
-			return;	
+			return;
 		}
 
 		if (fileStream)
 		{
 			fputs(logContent.c_str(), fileStream);
-			
+
 			err = fclose(fileStream);
 			if (err != 0)
 			{
-			// log? or console write?
+				// log? or console write?
 				return;
 			}
 		}

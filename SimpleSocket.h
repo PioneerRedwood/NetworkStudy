@@ -1,3 +1,6 @@
+#ifndef _SOCKET_
+#define _SOCKET_
+
 #include "predef.h"
 
 struct SocketBuffer
@@ -27,10 +30,11 @@ public:
 	void CloseSocket();
 	bool Update();
 
-	bool SendPacket(char* packet, int size);
+	bool SendPacket(const char* packet, int size);
 	bool RecvPacket(SocketBuffer* buffer);
 
-	int SendImmediate(char* buffer, int dataSize);
+	int SendImmediate(const char* buffer, int dataSize);
+
 private:
 	void SendDone();
 	void RecvDone();
@@ -44,8 +48,7 @@ private:
 	bool UpdateServer();
 	bool UpdateClient();
 
-
-	SOCKET sock;
+	SOCKET serverSock;
 	SOCKET clientSock;
 
 	struct sockaddr_in serverAddr;
@@ -57,3 +60,5 @@ private:
 	SocketBuffer sendBuffer;
 	SocketBuffer recvBuffer;
 };
+
+#endif // !_SOCKET_
