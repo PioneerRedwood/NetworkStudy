@@ -33,7 +33,7 @@ namespace Utils
 
 		GetLocalTime(&systemTime);
 
-		sprintf_s(cTimeStamp, "%04d-%02d-%02d %02d:%02d:%02d ",
+		sprintf_s(cTimeStamp, 256, "%04d-%02d-%02d %02d:%02d:%02d ",
 			systemTime.wYear,
 			systemTime.wMonth,
 			systemTime.wDay,

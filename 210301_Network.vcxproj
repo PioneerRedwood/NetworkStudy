@@ -146,6 +146,7 @@
     <ClCompile Include="MemDB.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="NetworkThread.cpp" />
+    <ClCompile Include="Server.cpp" />
     <ClCompile Include="SimpleSocket.cpp" />
     <ClCompile Include="TCP_Socket.cpp" />
   </ItemGroup>

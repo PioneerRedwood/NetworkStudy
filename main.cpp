@@ -47,7 +47,7 @@ void LoadConfig()
 	}
 }
 
-int main()
+int __main()
 {
 	LoadConfig();
 
