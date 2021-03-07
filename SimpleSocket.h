@@ -17,11 +17,11 @@ struct SocketBuffer
 	}
 };
 
-class Socket
+class SimpleSocket
 {
 public:
-	Socket();
-	~Socket();
+	SimpleSocket();
+	~SimpleSocket();
 
 	bool Init();
 	void UnInit();

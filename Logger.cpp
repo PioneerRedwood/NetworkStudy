@@ -1,6 +1,3 @@
-#include <stdarg.h>
-#include <stdlib.h>
-
 #include "predef.h"
 #include "Logger.h"
 #include "Utils.h"
@@ -63,6 +60,4 @@ void Logger::Log(int errNo, const char* format, ...)
 	{
 		printf(logContent.c_str());
 	}
-
-	// 네트워크 클래스 제작 3/4
 }

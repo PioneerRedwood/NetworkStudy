@@ -30,7 +30,7 @@ private:
 
 	bool		enable;
 	Commander*	commander;
-	Socket*		socket;
+	SimpleSocket*		socket;
 };
 
 #endif

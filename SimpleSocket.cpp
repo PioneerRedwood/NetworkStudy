@@ -1,6 +1,6 @@
 #include "SimpleSocket.h"
 
-Socket::Socket()
+SimpleSocket::SimpleSocket()
 {
 	WSAData data;
 	if(WSAStartup(MAKEWORD(2,2), &data) != 0)
@@ -24,12 +24,12 @@ Socket::Socket()
 	serverAddr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 }
 
-Socket::~Socket()
+SimpleSocket::~SimpleSocket()
 {
 	WSACleanup();
 }
 
-bool	Socket::Init()
+bool	SimpleSocket::Init()
 {
 #ifdef SERVER
 	return InitServer();
@@ -40,7 +40,7 @@ bool	Socket::Init()
 	return true;
 }
 
-bool	Socket::InitServer()
+bool	SimpleSocket::InitServer()
 {
 #ifdef SERVER
 	serverSock = socket(AF_INET, SOCK_STREAM, 0);
@@ -67,7 +67,7 @@ bool	Socket::InitServer()
 	return true;
 }
 
-bool	Socket::InitClient()
+bool	SimpleSocket::InitClient()
 {
 	clientSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (clientSock == -1)
@@ -105,14 +105,14 @@ bool	Socket::InitClient()
 	return true;
 }
 
-void	Socket::UnInit()
+void	SimpleSocket::UnInit()
 {
 	CloseSocket();
 	recvBufferList.clear();
 	sendBufferList.clear();
 }
 
-bool	Socket::Connect()
+bool	SimpleSocket::Connect()
 {
 #ifdef SERVER
 	return false;
@@ -141,7 +141,7 @@ bool	Socket::Connect()
 
 }
 
-void	Socket::CloseSocket()
+void	SimpleSocket::CloseSocket()
 {
 #ifdef SERVER
 	CloseServer();
@@ -150,7 +150,7 @@ void	Socket::CloseSocket()
 #endif // SERVER
 }
 
-void	Socket::CloseServer()
+void	SimpleSocket::CloseServer()
 {
 	if (serverSock > 0)
 	{
@@ -165,7 +165,7 @@ void	Socket::CloseServer()
 	}
 }
 
-void	Socket::CloseClient()
+void	SimpleSocket::CloseClient()
 {
 	if (clientSock == -1)
 		return;
@@ -173,7 +173,7 @@ void	Socket::CloseClient()
 	clientSock = -1;
 }
 
-bool	Socket::Update()
+bool	SimpleSocket::Update()
 {
 #ifdef SERVER
 	return UpdateServer();
@@ -182,7 +182,7 @@ bool	Socket::Update()
 #endif // SERVER
 }
 
-bool	Socket::UpdateServer()
+bool	SimpleSocket::UpdateServer()
 {
 #ifdef SERVER
 	// 처음 온 것
@@ -301,7 +301,7 @@ bool	Socket::UpdateServer()
 	return true;
 }
 
-bool	Socket::UpdateClient()
+bool	SimpleSocket::UpdateClient()
 {
 #if 1
 	char in[SOCKET_BUFFER];
@@ -396,7 +396,7 @@ bool	Socket::UpdateClient()
 	return true;
 }
 
-bool	Socket::SendPacket(const char* packet, int packetSize)
+bool	SimpleSocket::SendPacket(const char* packet, int packetSize)
 {
 	if (sendBuffer.totalSize > 0)
 	{
@@ -417,7 +417,7 @@ bool	Socket::SendPacket(const char* packet, int packetSize)
 	return true;
 }
 
-bool	Socket::RecvPacket(SocketBuffer* buffer)
+bool	SimpleSocket::RecvPacket(SocketBuffer* buffer)
 {
 	// 수신 버퍼 리스트가 비어있지 않으면
 	if (!recvBufferList.empty())
@@ -433,12 +433,12 @@ bool	Socket::RecvPacket(SocketBuffer* buffer)
 	return false;
 }
 
-int		Socket::SendImmediate(const char* buffer, int dataSize)
+int		SimpleSocket::SendImmediate(const char* buffer, int dataSize)
 {
 	return send(serverSock, buffer, dataSize, 0);
 }
 
-void	Socket::SendDone()
+void	SimpleSocket::SendDone()
 {
 	// 전송 버퍼 리스트가 비어있지 않으면
 	if (!sendBufferList.empty())
@@ -458,7 +458,7 @@ void	Socket::SendDone()
 	}
 }
 
-void	Socket::RecvDone()
+void	SimpleSocket::RecvDone()
 {
 	while (1)
 	{

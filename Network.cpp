@@ -16,7 +16,7 @@ Network::~Network()
 
 void	Network::Init()
 {
-	socket = new Socket();
+	socket = new SimpleSocket();
 	socket->Init();
 
 	commander = new Commander();

@@ -51,13 +51,13 @@ int __main()
 {
 	LoadConfig();
 
-	Socket* serverSocket = new Socket();
+	SimpleSocket* serverSocket = new SimpleSocket();
 	const char* hello = "hello";
 
 	if (serverSocket->Init())
 	{
 		std::cout << "Server started.. " << std::endl;
-		auto sendingPacket = [](bool send, Socket* socket, const char* message)
+		auto sendingPacket = [](bool send, SimpleSocket* socket, const char* message)
 		{
 			while (send)
 			{
