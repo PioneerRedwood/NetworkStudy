@@ -27,3 +27,18 @@ TODO
 - 서버/클라이언트 클래스
 - 다중 클라이언트 접속
 - 네트워킹 스레드 설계
+
+
+
+# New Start #2
+
+### boost::asio network
+
+2021.03.30 ~ Now
+
+@copyright [OneLoneCoder's Youtube](https://www.youtube.com/c/javidx9), [OneLoneCoder's GitHub](https://github.com/OneLoneCoder)
+
+#### 목적
+
+- 게임 개발의 제다이 그랜드 마스터가 되자 😎
+
