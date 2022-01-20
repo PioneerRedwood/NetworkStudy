@@ -1,4 +1,4 @@
-# Network Study [Private]
+# Network Study
 
 학습 기간: 2021.03.02 ~ 2021.03.07
 
@@ -34,11 +34,7 @@ TODO
 
 ### boost::asio network
 
-2021.03.30 ~ Now
+since. 2021.03.30
 
 @copyright [OneLoneCoder's Youtube](https://www.youtube.com/c/javidx9), [OneLoneCoder's GitHub](https://github.com/OneLoneCoder)
-
-#### 목적
-
-- 게임 개발의 제다이 그랜드 마스터가 되자 😎
 
